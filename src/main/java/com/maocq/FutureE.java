@@ -46,11 +46,22 @@ public class FutureE<L, R> {
           r -> mapper.apply(r).getValue()
         )));
     }
-    
+
     public <U> Future<U> fold(Function<? super L, ? extends U> leftMapper, Function<? super R, ? extends U> rightMapper) {
         Objects.requireNonNull(leftMapper, "leftMapper is null");
         Objects.requireNonNull(rightMapper, "rightMapper is null");
-        return this.value.map(e -> e.fold(leftMapper, rightMapper));
+        return value.map(e -> e.fold(leftMapper, rightMapper));
+    }
+
+    public <X, Y> FutureE<X, Y> bimap(Function<? super L, ? extends X> leftMapper, Function<? super R, ? extends Y> rightMapper) {
+        Objects.requireNonNull(leftMapper, "leftMapper is null");
+        Objects.requireNonNull(rightMapper, "rightMapper is null");
+        return new FutureE<>(value.map(e -> e.bimap(leftMapper, rightMapper)));
+    }
+
+    public FutureE<L, R> recover(Function<? super Throwable, ? extends Either<L, R>> f) {
+        Objects.requireNonNull(f, "f is null");
+        return new FutureE<>(value.recover(f));
     }
 
 }

@@ -156,6 +156,38 @@ public class FutureETest {
     }
 
     /**
+     * Se puede transformar el Either de un FutureE con bimap
+     */
+    @Test
+    public void bimap() {
+        FutureE<String, Integer> futureE = FutureE.of(futureEither(1))
+          .flatMap(x -> FutureE.of(futureEither(x)));
+        FutureE<Integer, String> futureEBimap = futureE.bimap(l -> l.length(), r -> r.toString());
+
+        Either<Integer, String> resultado = futureEBimap.getValue().get();
+        assertEquals("resultado debe ser '3'", "3", resultado.get());
+    }
+
+    /**
+     * Se puede transformar FutureE con futuro fallido con recover
+     */
+    @Test
+    public void recover() {
+        FutureE<String, Integer> futureE = FutureE.of(futureEither(1))
+          .flatMap(x -> FutureE.of(futureFailure(x)))  // Failure
+          .flatMap(y -> FutureE.of(futureEither(y)));
+
+        Integer esperado = 9;
+        FutureE<String, Integer> futureERecover = futureE.recover(t -> Either.right(esperado));
+
+        Future<Either<String, Integer>> resultado = futureERecover.getValue();
+        resultado.await();
+
+        assertTrue("resultado debe ser Success", resultado.isSuccess());
+        assertEquals("El resultado debe ser 9", esperado, resultado.get().get());
+    }
+
+    /**
      * Se pueden componer FutureE's con flatMap y trabajar con todos sus resultado
      */
     @Test
