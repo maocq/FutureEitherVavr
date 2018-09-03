@@ -133,6 +133,23 @@ public class FutureETest {
     }
 
     /**
+     * Se pueden transformar el valor left con mapLeft
+     */
+    @Test
+    public void mapLeft() {
+        FutureE<String, Integer> futureE = FutureE.of(futureEither(1))
+          .flatMap(x -> FutureE.of(futureEitherLeft(x)))  // left
+          .flatMap(y -> FutureE.of(futureEither(y)));
+
+        Integer esperado = -1;
+        FutureE<Integer, Integer> futureELeft = futureE.mapLeft(l -> esperado);
+
+        Either<Integer, Integer> either = futureELeft.getValue().get();
+        assertTrue("either debe ser left", either.isLeft());
+        assertEquals("Debe ser -1", esperado, either.getLeft());
+    }
+
+    /**
      * Se puede transformar un FutureE en un Future<U> con fold
      */
     @Test
